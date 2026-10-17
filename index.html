@@ -127,6 +127,8 @@ section.block{padding-block:88px}
 .pill input:checked + span{background:var(--teal);border-color:var(--teal);color:#fff}
 .pill input:focus-visible + span{outline:2px solid var(--teal);outline-offset:2px}
 .empty{font-size:15px;color:var(--mut);padding:14px 16px;background:var(--bg);border:1px dashed var(--line-2);border-radius:2px}
+.field select{font:inherit;font-size:16.5px;padding:14px 15px;border:1px solid var(--line-2);border-radius:2px;background:#fff;color:var(--ink);width:100%;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat}
+.field select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field label{font-size:14px;font-weight:500;color:var(--ink)}
@@ -292,6 +294,10 @@ footer .brand .mk{width:70px;height:28px}
                 <div class="field"><label for="nome">Seu nome</label><input id="nome" type="text" autocomplete="name" required></div>
                 <div class="field"><label for="whats">WhatsApp com DDD</label><input id="whats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" required></div>
               </div>
+              <div class="fields">
+                <div class="field"><label for="como">Como chegou até nós?</label><select id="como"><option value="">Escolha uma opção</option><option>Indicação de paciente ou amigo(a)</option><option>Indicação de médico ou profissional de saúde</option><option>Instagram</option><option>Google</option><option>WhatsApp</option><option>Evento ou ação da clínica</option><option>Empresa ou convênio parceiro</option><option>Outro</option></select></div>
+                <div class="field"><label for="indicado">Indicado(a) por</label><input id="indicado" type="text" autocomplete="off" placeholder="Nome de quem indicou ou de onde veio"></div>
+              </div>
               <div class="field"><label id="lh">Melhor horário para falarmos</label><div class="pills" role="radiogroup" aria-labelledby="lh" id="hor"></div></div>
               <label class="consent" for="ok"><input id="ok" type="checkbox"><span>Autorizo a Clínica Infinitum a usar estas respostas e a falar comigo por WhatsApp ou telefone sobre a avaliação e os atendimentos.</span></label>
             </fieldset>
@@ -388,6 +394,7 @@ footer .brand .mk{width:70px;height:28px}
   details();
 
   function digits(s){ return (s||"").replace(/\D/g,""); }
+  (function(){ try { var q = new URLSearchParams(location.search), i = q.get("indicado") || q.get("ref"), c = q.get("como"); if (i) document.getElementById("indicado").value = i; if (c) { var sl = document.getElementById("como"); [].forEach.call(sl.options, function(op){ if (op.text.toLowerCase().indexOf(c.toLowerCase()) === 0) sl.value = op.value || op.text; }); } } catch(e){} })();
   function utm(){ var o = {}; try { new URLSearchParams(location.search).forEach(function(v,k){ if (/^utm_|^origem$/.test(k)) o[k]=v; }); } catch(e){} return o; }
   function priority(){
     var r = [];
@@ -415,7 +422,7 @@ footer .brand .mk{width:70px;height:28px}
     var lead = { key:C.writeKey, quando:new Date().toISOString(), nome:nome, whatsapp:w, horario:hor,
       interesses: chosen.map(function(it){ return it.t; }), objetivo: chosen.map(function(it){ return it.t; }).join(" + "),
       medicas: meds, medicaNome: meds.map(function(m){ return MED[m].nome; }).join(" + "),
-      respostas: ans, prioridade: priority(), origem: utm(), pagina: location.href };
+      respostas: ans, prioridade: priority(), origem: (function(){ var o = utm(), cm = document.getElementById("como").value, ind = document.getElementById("indicado").value.trim(); if (cm) o["como chegou"] = cm; if (ind) o["indicado por"] = ind; return o; })(), pagina: location.href };
     var btn = document.getElementById("send"); btn.disabled = true; btn.textContent = "Enviando…";
     var p = C.endpointUrl ? fetch(C.endpointUrl, { method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(lead) }).catch(function(){}) : Promise.resolve();
     p.then(function(){ done(nome, meds); });
