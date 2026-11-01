@@ -295,6 +295,10 @@ footer .brand .mk{width:70px;height:28px}
                 <div class="field"><label for="whats">WhatsApp com DDD</label><input id="whats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" required></div>
               </div>
               <div class="fields">
+                <div class="field"><label for="prof">Profissão ou ocupação</label><input id="prof" type="text" autocomplete="organization-title" placeholder="Ex.: professora, empresária, aposentada" required></div>
+                <div class="field"><label for="insta">@ do Instagram <span style="font-weight:400;opacity:.7">(opcional)</span></label><input id="insta" type="text" autocapitalize="off" autocorrect="off" placeholder="@seuperfil"></div>
+              </div>
+              <div class="fields">
                 <div class="field"><label for="como">Como chegou até nós?</label><select id="como"><option value="">Escolha uma opção</option><option>Indicação de paciente ou amigo(a)</option><option>Indicação de médico ou profissional de saúde</option><option>Instagram</option><option>Google</option><option>WhatsApp</option><option>Evento ou ação da clínica</option><option>Empresa ou convênio parceiro</option><option>Outro</option></select></div>
                 <div class="field"><label for="indicado">Indicado(a) por</label><input id="indicado" type="text" autocomplete="off" placeholder="Nome de quem indicou ou de onde veio"></div>
               </div>
@@ -414,15 +418,19 @@ footer .brand .mk{width:70px;height:28px}
     var err = document.getElementById("err");
     var msg = !chosen.length ? "Marque pelo menos uma opção no passo 1." :
               !nome ? "Escreva o seu nome." :
+              document.getElementById("prof").value.trim().length < 2 ? "Conte qual é a sua profissão ou ocupação." :
               (w.length < 10 || w.length > 13) ? "Confira o WhatsApp: DDD e número, por exemplo (31) 99999-9999." :
               !document.getElementById("ok").checked ? "Marque a autorização de contato para recebermos o seu pedido." : "";
     if (msg){ err.textContent = msg; err.hidden = false; return; }
     err.hidden = true;
     var meds = []; chosen.forEach(function(it){ if (meds.indexOf(it.med) < 0) meds.push(it.med); });
+    var ig = document.getElementById("insta").value.trim().replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i,"").replace(/\/.*$/,""); if (ig && ig.charAt(0) !== "@") ig = "@"+ig;
+    var ans2 = { "Profissão": document.getElementById("prof").value.trim() }; if (ig) ans2["Instagram"] = ig;
+    Object.keys(ans||{}).forEach(function(k){ ans2[k] = ans[k]; });
     var lead = { key:C.writeKey, quando:new Date().toISOString(), nome:nome, whatsapp:w, horario:hor,
       interesses: chosen.map(function(it){ return it.t; }), objetivo: chosen.map(function(it){ return it.t; }).join(" + "),
       medicas: meds, medicaNome: meds.map(function(m){ return MED[m].nome; }).join(" + "),
-      respostas: ans, prioridade: priority(), origem: (function(){ var o = utm(), cm = document.getElementById("como").value, ind = document.getElementById("indicado").value.trim(); if (cm) o["como chegou"] = cm; if (ind) o["indicado por"] = ind; return o; })(), pagina: location.href };
+      respostas: ans2, prioridade: priority(), origem: (function(){ var o = utm(), cm = document.getElementById("como").value, ind = document.getElementById("indicado").value.trim(); if (cm) o["como chegou"] = cm; if (ind) o["indicado por"] = ind; return o; })(), pagina: location.href };
     var btn = document.getElementById("send"); btn.disabled = true; btn.textContent = "Enviando…";
     var p = C.endpointUrl ? fetch(C.endpointUrl, { method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(lead) }).catch(function(){}) : Promise.resolve();
     p.then(function(){ done(nome, meds); });
